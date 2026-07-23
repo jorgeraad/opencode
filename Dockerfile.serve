@@ -1,0 +1,13 @@
+# Isolated opencode V2 `serve` target for Console pentests. Throwaway box — treat as compromised.
+# V2 layout: CLI lives in packages/cli; server in packages/server (Effect-based).
+FROM oven/bun:1-debian
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ripgrep git python3 make g++ ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+ENV HUSKY=0 CI=true
+WORKDIR /app
+COPY . .
+RUN bun install
+EXPOSE 4096
+# Bind 0.0.0.0 (default is 127.0.0.1). V2 is secure-by-default; OPENCODE_PASSWORD is set via Railway env.
+CMD ["sh","-c","bun run --cwd packages/cli --conditions=browser src/index.ts serve --hostname 0.0.0.0 --port ${PORT:-4096}"]
